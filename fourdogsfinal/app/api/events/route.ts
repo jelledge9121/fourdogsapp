@@ -5,7 +5,8 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from("available_events")
-      .select("id, title, event_date, status, venue_name");
+      .select("id, title, event_date, status, venue_name")
+      .order("event_date", { ascending: true }); // 👈 chronological order
 
     if (error) {
       return NextResponse.json(
@@ -27,4 +28,3 @@ export async function GET() {
     );
   }
 }
-// trigger redeploy
