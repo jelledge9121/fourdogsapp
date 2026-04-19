@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
   const { fullName, phone, email, teamName, firstTime, eventId } = parsed.data;
 
-  // 1. Get event by ID — only if it's currently live. Derive venue_id server-side.
+  // 1. Get event by ID — only if it's currently live
   const { data: events } = await supabaseAdmin
     .from("events")
     .select("id, venue_id")
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 3. Create check-in (venue_id is derived internally by the function)
+  // 3. Create check-in
   const { data: checkinData, error: checkinError } = await supabaseAdmin.rpc(
     "create_checkin",
     {
@@ -118,9 +118,22 @@ export async function POST(req: NextRequest) {
 
   const checkInId = checkinData?.check_in_id;
 
+  // ✅ NEW: Get total visits for this customer
+  const { count } = await supabaseAdmin
+    .from("checkins")
+    .select("*", { count: "exact", head: true })
+    .eq("customer_id", customerId);
+
   apiLog("info", "/api/checkin", "checkin_ok", {
     ip,
-    meta: { customerId, checkInId, team: teamName },
+    meta: { customerId, checkInId, team: teamName, totalVisits: count },
   });
-  return NextResponse.json({ ok: true, customerId, checkInId });
+
+  // ✅ RETURN WITH VISIT COUNT
+  return NextResponse.json({
+    ok: true,
+    customerId,
+    checkInId,
+    totalVisits: count ?? 1,
+  });
 }
