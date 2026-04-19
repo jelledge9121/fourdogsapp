@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import FourDogsLogo from "@/components/FourDogsLogo";
 import OfflineIndicator from "@/components/OfflineIndicator";
-import { supabase } from "@/lib/supabase";
 import { sanitize, isValid } from "@/lib/sanitize";
 
 interface AvailableEvent {
@@ -42,41 +41,34 @@ export default function CheckInPage() {
 
   useEffect(() => {
     async function loadEvents() {
-      const { data, error } = await supabase
-        .from("events")
-        .select("id, title, event_date, status, venue_id")
-        .eq("status", "live")
-        .order("event_date", { ascending: true });
+      try {
+        const res = await fetch("/api/events", { cache: "no-store" });
+        const json = await res.json();
 
-      if (error) {
-        console.error("Supabase error:", error);
-        setErrorMsg(error.message || "Could not load events.");
+        if (!res.ok) {
+          setErrorMsg(json.error || "Could not load events.");
+          setPageState("no-event");
+          return;
+        }
+
+        const available = (json.events ?? []) as AvailableEvent[];
+
+        if (available.length === 0) {
+          setPageState("no-event");
+          return;
+        }
+
+        setEvents(available);
+
+        if (available.length === 1) {
+          setSelectedEvent(available[0]);
+          setPageState("form");
+        } else {
+          setPageState("select-event");
+        }
+      } catch {
+        setErrorMsg("Could not load events.");
         setPageState("no-event");
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        setErrorMsg("");
-        setPageState("no-event");
-        return;
-      }
-
-      const available: AvailableEvent[] = (data as any[]).map((e) => ({
-        id: e.id,
-        title: e.title,
-        event_date: e.event_date,
-        status: e.status,
-        venue_name: "Venue",
-      }));
-
-      setEvents(available);
-
-      if (available.length === 1) {
-        setSelectedEvent(available[0]);
-        setPageState("form");
-      } else {
-        setSelectedEvent(null);
-        setPageState("select-event");
       }
     }
 
@@ -85,8 +77,6 @@ export default function CheckInPage() {
 
   function handleSelectEvent(ev: AvailableEvent) {
     setSelectedEvent(ev);
-    setFormState("idle");
-    setErrorMsg("");
     setPageState("form");
   }
 
@@ -143,17 +133,8 @@ export default function CheckInPage() {
     setFirstTime(false);
     setFormState("idle");
     setErrorMsg("");
-
-    if (events.length === 1) {
-      setSelectedEvent(events[0]);
-      setPageState("form");
-    } else if (events.length > 1) {
-      setSelectedEvent(null);
-      setPageState("select-event");
-    } else {
-      setSelectedEvent(null);
-      setPageState("no-event");
-    }
+    setSelectedEvent(null);
+    setPageState(events.length > 1 ? "select-event" : events.length === 1 ? "form" : "no-event");
   }, [events]);
 
   return (
