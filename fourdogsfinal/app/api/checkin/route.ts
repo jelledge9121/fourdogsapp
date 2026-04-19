@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { teamName, playerName, firstTime, eventId } = parsed.data;
+  const { fullName, phone, email, teamName, firstTime, eventId } = parsed.data;
 
   // 1. Get event by ID — only if it's currently live. Derive venue_id server-side.
   const { data: events } = await supabaseAdmin
@@ -50,28 +50,65 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No active event." }, { status: 404 });
   }
 
-  // 2. Call atomic RPC
-  const { data, error } = await supabaseAdmin.rpc("perform_checkin", {
-    p_player_name: playerName,
-    p_team_name: teamName,
-    p_event_id: event.id,
-    p_venue_id: event.venue_id,
-    p_is_first_visit: firstTime,
-  });
+  // 2. Find or create customer
+  const { data: customerData, error: customerError } = await supabaseAdmin.rpc(
+    "find_or_create_customer",
+    {
+      p_full_name: fullName,
+      p_phone: phone || null,
+      p_email: email || null,
+    }
+  );
 
-  if (error) {
+  if (customerError) {
+    apiLog("error", "/api/checkin", "find_or_create_customer_error", {
+      ip,
+      meta: { code: customerError.code, message: customerError.message },
+    });
+    return NextResponse.json(
+      { error: "Could not process customer. Try again." },
+      { status: 500 }
+    );
+  }
+
+  const customerId = customerData?.customer_id;
+
+  if (!customerId) {
+    apiLog("error", "/api/checkin", "no_customer_id_returned", {
+      ip,
+      meta: { customerData },
+    });
+    return NextResponse.json(
+      { error: "Could not process customer. Try again." },
+      { status: 500 }
+    );
+  }
+
+  // 3. Create check-in (venue_id is derived internally by the function)
+  const { data: checkinData, error: checkinError } = await supabaseAdmin.rpc(
+    "create_checkin",
+    {
+      p_customer_id: customerId,
+      p_event_id: event.id,
+      p_team_name: teamName || null,
+      p_referred_by_customer_id: null,
+      p_is_first_visit: firstTime,
+    }
+  );
+
+  if (checkinError) {
     if (
-      error.message?.includes("already checked in") ||
-      error.code === "23505"
+      checkinError.message?.includes("already checked in") ||
+      checkinError.code === "23505"
     ) {
       return NextResponse.json(
         { error: "You're already checked in!" },
         { status: 409 }
       );
     }
-    apiLog("error", "/api/checkin", "rpc_error", {
+    apiLog("error", "/api/checkin", "create_checkin_error", {
       ip,
-      meta: { code: error.code, message: error.message },
+      meta: { code: checkinError.code, message: checkinError.message },
     });
     return NextResponse.json(
       { error: "Check-in failed. Try again." },
@@ -79,9 +116,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const checkInId = checkinData?.check_in_id;
+
   apiLog("info", "/api/checkin", "checkin_ok", {
     ip,
-    meta: { customerId: data, team: teamName },
+    meta: { customerId, checkInId, team: teamName },
   });
-  return NextResponse.json({ ok: true, customerId: data });
+  return NextResponse.json({ ok: true, customerId, checkInId });
 }
