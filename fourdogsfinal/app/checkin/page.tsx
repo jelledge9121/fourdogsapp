@@ -46,7 +46,15 @@ export default function CheckInPage() {
         .from("available_events")
         .select("id, title, event_date, status, venue_name");
 
-      if (error || !data || data.length === 0) {
+      if (error) {
+        console.error("available_events error:", error);
+        setErrorMsg(error.message || "Could not load events.");
+        setPageState("no-event");
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        setErrorMsg("");
         setPageState("no-event");
         return;
       }
@@ -123,7 +131,9 @@ export default function CheckInPage() {
     setFirstTime(false);
     setFormState("idle");
     setErrorMsg("");
-  }, []);
+    setSelectedEvent(null);
+    setPageState(events.length > 1 ? "select-event" : events.length === 1 ? "form" : "no-event");
+  }, [events]);
 
   return (
     <main className="min-h-dvh bg-brand-black flex flex-col">
@@ -134,14 +144,14 @@ export default function CheckInPage() {
       </header>
 
       <div className="flex-1 flex flex-col justify-center px-6 pb-12 max-w-md mx-auto w-full">
-
         {pageState === "loading" && (
           <div className="text-center py-16 text-white">Loading events...</div>
         )}
 
         {pageState === "no-event" && (
           <div className="text-center py-16 text-white">
-            No events available
+            <div>No events available</div>
+            {errorMsg && <div className="mt-2 text-sm text-red-400">{errorMsg}</div>}
           </div>
         )}
 
@@ -153,12 +163,13 @@ export default function CheckInPage() {
                 <button
                   key={ev.id}
                   onClick={() => handleSelectEvent(ev)}
-                  className="w-full p-4 bg-gray-800 text-white rounded"
+                  className="w-full p-4 bg-gray-800 text-white rounded text-left"
                 >
-                  <div>{ev.title}</div>
+                  <div className="font-semibold">{ev.title}</div>
                   <div className="text-sm opacity-70">
                     {ev.venue_name} • {formatDate(ev.event_date)}
                   </div>
+                  <div className="text-xs opacity-60 mt-1 uppercase">{ev.status}</div>
                 </button>
               ))}
             </div>
@@ -167,12 +178,14 @@ export default function CheckInPage() {
 
         {pageState === "form" && selectedEvent && formState !== "success" && (
           <form onSubmit={handleSubmit} className="space-y-4 text-white">
+            {events.length > 1 && (
+              <button type="button" onClick={handleBackToEvents}>
+                ← Back
+              </button>
+            )}
 
-            <button type="button" onClick={handleBackToEvents}>
-              ← Back
-            </button>
-
-            <div>{selectedEvent.title}</div>
+            <div className="text-lg font-semibold">{selectedEvent.title}</div>
+            <div className="text-sm opacity-70">{selectedEvent.venue_name}</div>
 
             <input
               placeholder="Your Name"
@@ -202,20 +215,40 @@ export default function CheckInPage() {
               className="w-full p-3 bg-gray-800 rounded"
             />
 
-            <button type="submit" className="w-full p-4 bg-green-500 rounded">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={firstTime}
+                onChange={(e) => setFirstTime(e.target.checked)}
+              />
+              First time here?
+            </label>
+
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              className="w-full p-4 bg-green-500 rounded disabled:opacity-50"
+            >
               {formState === "submitting" ? "Checking in..." : "Check In"}
             </button>
 
-            {formState === "error" && <div>{errorMsg}</div>}
+            {formState === "error" && <div className="text-red-400">{errorMsg}</div>}
           </form>
         )}
 
         {formState === "success" && (
           <div className="text-center text-white py-10">
             You're in!
+            <div className="mt-4">
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 bg-gray-800 rounded"
+              >
+                Check in another player
+              </button>
+            </div>
           </div>
         )}
-
       </div>
     </main>
   );
