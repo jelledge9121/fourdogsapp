@@ -45,7 +45,8 @@ export default function CheckInPage() {
       const { data, error } = await supabase
         .from("events")
         .select("id, title, event_date, status, venue_id")
-        .eq("status", "live");
+        .eq("status", "live")
+        .order("event_date", { ascending: true });
 
       if (error) {
         console.error("Supabase error:", error);
