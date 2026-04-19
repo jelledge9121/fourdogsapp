@@ -5,8 +5,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from("available_events")
-      .select("id, title, event_date, status, venue_name")
-      .order("event_date", { ascending: true }); // 👈 chronological order
+      .select("id, title, event_date, status, venue_name");
 
     if (error) {
       return NextResponse.json(
@@ -15,7 +14,13 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ events: data ?? [] });
+    const sortedEvents = (data ?? []).sort(
+      (a, b) =>
+        new Date(a.event_date).getTime() -
+        new Date(b.event_date).getTime()
+    );
+
+    return NextResponse.json({ events: sortedEvents });
   } catch (err) {
     return NextResponse.json(
       {
