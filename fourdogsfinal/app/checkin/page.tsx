@@ -2,13 +2,7 @@ useEffect(() => {
   async function loadEvents() {
     const { data, error } = await supabase
       .from("events")
-      .select(`
-        id,
-        title,
-        event_date,
-        status,
-        venues(name)
-      `)
+      .select("id, title, event_date, status, venue_id")
       .eq("status", "live");
 
     if (error) {
@@ -28,7 +22,7 @@ useEffect(() => {
       title: e.title,
       event_date: e.event_date,
       status: e.status,
-      venue_name: e.venues?.name || "Unknown Venue",
+      venue_name: "Venue",
     }));
 
     setEvents(available);
