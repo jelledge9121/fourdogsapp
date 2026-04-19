@@ -54,6 +54,7 @@ export default function CheckInPage() {
         const available = (json.events ?? []) as AvailableEvent[];
 
         if (available.length === 0) {
+          setErrorMsg("");
           setPageState("no-event");
           return;
         }
