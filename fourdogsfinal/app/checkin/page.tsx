@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import FourDogsLogo from "@/components/FourDogsLogo";
 import OfflineIndicator from "@/components/OfflineIndicator";
-import { supabase } from "@/lib/supabase";
 import { sanitize, isValid } from "@/lib/sanitize";
 
 interface AvailableEvent {
@@ -42,31 +41,34 @@ export default function CheckInPage() {
 
   useEffect(() => {
     async function loadEvents() {
-      const { data, error } = await supabase
-        .from("available_events")
-        .select("id, title, event_date, status, venue_name");
+      try {
+        const res = await fetch("/api/events", { cache: "no-store" });
+        const json = await res.json();
 
-      if (error) {
-        console.error("available_events error:", error);
-        setErrorMsg(error.message || "Could not load events.");
+        if (!res.ok) {
+          setErrorMsg(json.error || "Could not load events.");
+          setPageState("no-event");
+          return;
+        }
+
+        const available = (json.events || []) as AvailableEvent[];
+
+        if (available.length === 0) {
+          setPageState("no-event");
+          return;
+        }
+
+        setEvents(available);
+
+        if (available.length === 1) {
+          setSelectedEvent(available[0]);
+          setPageState("form");
+        } else {
+          setPageState("select-event");
+        }
+      } catch {
+        setErrorMsg("Could not load events.");
         setPageState("no-event");
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        setErrorMsg("");
-        setPageState("no-event");
-        return;
-      }
-
-      const available = data as AvailableEvent[];
-      setEvents(available);
-
-      if (available.length === 1) {
-        setSelectedEvent(available[0]);
-        setPageState("form");
-      } else {
-        setPageState("select-event");
       }
     }
 
