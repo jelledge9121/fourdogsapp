@@ -17,8 +17,10 @@ const sanitizedString = (max: number) =>
 
 // ── /api/checkin ────────────────────────────────────────
 export const CheckinPayload = z.object({
-  teamName: sanitizedString(30),
-  playerName: sanitizedString(100),
+  fullName: sanitizedString(100),
+  phone: z.string().max(20).optional().default(""),
+  email: z.string().max(100).optional().default(""),
+  teamName: z.string().max(30).optional().default(""),
   firstTime: z.boolean().optional().default(false),
   eventId: uuidField,
 });
