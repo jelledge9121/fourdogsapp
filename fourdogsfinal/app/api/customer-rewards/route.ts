@@ -56,3 +56,6 @@ export async function GET(req: NextRequest) {
   }
 }
 // redeploy
+git add .
+git commit -m "update rewards endpoint"
+git push
