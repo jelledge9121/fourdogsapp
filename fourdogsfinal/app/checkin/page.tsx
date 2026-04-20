@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import FourDogsLogo from "@/components/FourDogsLogo";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import { sanitize, isValid } from "@/lib/sanitize";
@@ -17,7 +18,10 @@ type PageState = "loading" | "no-event" | "select-event" | "form";
 type FormState = "idle" | "submitting" | "success" | "error";
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
+  const raw = dateStr.slice(0, 10);
+  const [year, month, day] = raw.split("-").map(Number);
+  const d = new Date(year, month - 1, day);
+
   return d.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
@@ -26,11 +30,12 @@ function formatDate(dateStr: string): string {
 }
 
 export default function CheckInPage() {
+  const searchParams = useSearchParams();
+  const referrerId = searchParams.get("ref");
+
   const [pageState, setPageState] = useState<PageState>("loading");
   const [events, setEvents] = useState<AvailableEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<AvailableEvent | null>(null);
-  const params = new URLSearchParams(window.location.search);
-  const referrerId = params.get("ref");
 
   const [playerName, setPlayerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -110,6 +115,7 @@ export default function CheckInPage() {
           teamName: teamName ? sanitize(teamName, 30) : "",
           firstTime,
           eventId: selectedEvent.id,
+          referredByCustomerId: referrerId || null,
         }),
       });
 
@@ -137,7 +143,9 @@ export default function CheckInPage() {
     setFormState("idle");
     setErrorMsg("");
     setSelectedEvent(null);
-    setPageState(events.length > 1 ? "select-event" : events.length === 1 ? "form" : "no-event");
+    setPageState(
+      events.length > 1 ? "select-event" : events.length === 1 ? "form" : "no-event"
+    );
   }, [events]);
 
   return (
@@ -245,10 +253,7 @@ export default function CheckInPage() {
           <div className="text-center text-white py-10">
             You're in!
             <div className="mt-4">
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 bg-gray-800 rounded"
-              >
+              <button onClick={handleReset} className="px-4 py-2 bg-gray-800 rounded">
                 Check in another player
               </button>
             </div>
