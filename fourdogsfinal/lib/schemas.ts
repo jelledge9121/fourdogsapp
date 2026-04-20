@@ -23,6 +23,7 @@ export const CheckinPayload = z.object({
   teamName: z.string().max(30).optional().default(""),
   firstTime: z.boolean().optional().default(false),
   eventId: uuidField,
+  referredByCustomerId: uuidField.optional().nullable(),
 });
 export type CheckinPayload = z.infer<typeof CheckinPayload>;
 
@@ -60,7 +61,12 @@ export const TogglePayload = z.object({
   customerId: uuidField,
   eventId: uuidField,
   venueId: uuidField,
-  flag: z.enum(["free_square_on", "free_square_off", "extra_card_on", "extra_card_off"]),
+  flag: z.enum([
+    "free_square_on",
+    "free_square_off",
+    "extra_card_on",
+    "extra_card_off",
+  ]),
   description: sanitizedString(200),
   points: z.number().int().min(0).max(10).optional().default(0),
 });
