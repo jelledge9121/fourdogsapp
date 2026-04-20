@@ -29,6 +29,8 @@ export default function CheckInPage() {
   const [pageState, setPageState] = useState<PageState>("loading");
   const [events, setEvents] = useState<AvailableEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<AvailableEvent | null>(null);
+  const params = new URLSearchParams(window.location.search);
+  const referrerId = params.get("ref");
 
   const [playerName, setPlayerName] = useState("");
   const [phone, setPhone] = useState("");
