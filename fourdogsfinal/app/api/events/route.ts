@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
-      .from("available_events")
+      .from("public.available_events")
       .select("id, title, event_date, status, venue_name");
 
     if (error) {
