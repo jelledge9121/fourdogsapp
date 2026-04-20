@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
-  // Rate limit by IP — 10 check-ins per minute per IP
   const rl = await checkRateLimit(`checkin:${ip}`, 10, "checkin");
   if (!rl.allowed) {
     apiLog("warn", "/api/checkin", "rate_limited", { ip });
@@ -18,7 +17,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Parse + validate
   let body: unknown;
   try {
     body = await req.json();
@@ -34,15 +32,41 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { fullName, phone, email, teamName, firstTime, eventId } = parsed.data;
+  const {
+    fullName,
+    phone,
+    email,
+    teamName,
+    firstTime,
+    eventId,
+    referredByCustomerId,
+  } = parsed.data as {
+    fullName: string;
+    phone?: string;
+    email?: string;
+    teamName?: string;
+    firstTime: boolean;
+    eventId: string;
+    referredByCustomerId?: string | null;
+  };
 
-  // 1. Get event by ID — only if it's currently live
-  const { data: events } = await supabaseAdmin
+  const { data: events, error: eventError } = await supabaseAdmin
     .from("events")
     .select("id, venue_id")
     .eq("id", eventId)
     .eq("status", "live")
     .limit(1);
+
+  if (eventError) {
+    apiLog("error", "/api/checkin", "event_lookup_error", {
+      ip,
+      meta: { code: eventError.code, message: eventError.message, eventId },
+    });
+    return NextResponse.json(
+      { error: "Could not validate event. Try again." },
+      { status: 500 }
+    );
+  }
 
   const event = events?.[0] ?? null;
 
@@ -50,7 +74,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No active event." }, { status: 404 });
   }
 
-  // 2. Find or create customer
   const { data: customerData, error: customerError } = await supabaseAdmin.rpc(
     "find_or_create_customer",
     {
@@ -66,7 +89,7 @@ export async function POST(req: NextRequest) {
       meta: { code: customerError.code, message: customerError.message },
     });
     return NextResponse.json(
-      { error: "Could not process customer. Try again." },
+      { error: customerError.message || "Could not process customer. Try again." },
       { status: 500 }
     );
   }
@@ -84,14 +107,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 3. Create check-in
   const { data: checkinData, error: checkinError } = await supabaseAdmin.rpc(
     "create_checkin",
     {
       p_customer_id: customerId,
       p_event_id: event.id,
       p_team_name: teamName || null,
-      p_referred_by_customer_id: null,
+      p_referred_by_customer_id: referredByCustomerId || null,
       p_is_first_visit: firstTime,
     }
   );
@@ -106,34 +128,33 @@ export async function POST(req: NextRequest) {
         { status: 409 }
       );
     }
+
     apiLog("error", "/api/checkin", "create_checkin_error", {
       ip,
       meta: { code: checkinError.code, message: checkinError.message },
     });
+
     return NextResponse.json(
-      { error: "Check-in failed. Try again." },
+      { error: checkinError.message || "Check-in failed. Try again." },
       { status: 500 }
     );
   }
 
   const checkInId = checkinData?.check_in_id;
 
-  // ✅ NEW: Get total visits for this customer
-  const { count } = await supabaseAdmin
-    .from("checkins")
-    .select("*", { count: "exact", head: true })
-    .eq("customer_id", customerId);
-
   apiLog("info", "/api/checkin", "checkin_ok", {
     ip,
-    meta: { customerId, checkInId, team: teamName, totalVisits: count },
+    meta: {
+      customerId,
+      checkInId,
+      team: teamName,
+      referredByCustomerId: referredByCustomerId || null,
+    },
   });
 
-  // ✅ RETURN WITH VISIT COUNT
   return NextResponse.json({
     ok: true,
     customerId,
     checkInId,
-    totalVisits: count ?? 1,
   });
 }
