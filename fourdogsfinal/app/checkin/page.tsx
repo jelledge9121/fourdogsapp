@@ -14,6 +14,13 @@ interface AvailableEvent {
   venue_name: string;
 }
 
+interface RewardSummary {
+  customer_id: string;
+  total_points?: number;
+  total_visits?: number;
+  available_rewards?: number;
+}
+
 type PageState = "loading" | "no-event" | "select-event" | "form";
 type FormState = "idle" | "submitting" | "success" | "error";
 
@@ -45,6 +52,7 @@ export default function CheckInPage() {
 
   const [formState, setFormState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [rewardSummary, setRewardSummary] = useState<RewardSummary | null>(null);
 
   useEffect(() => {
     async function loadEvents() {
@@ -92,6 +100,7 @@ export default function CheckInPage() {
     setSelectedEvent(null);
     setFormState("idle");
     setErrorMsg("");
+    setRewardSummary(null);
     setPageState("select-event");
   }
 
@@ -128,6 +137,19 @@ export default function CheckInPage() {
       }
 
       setFormState("success");
+
+      if (json.customerId) {
+        const rewardRes = await fetch(
+          `/api/customer-rewards?customerId=${json.customerId}`,
+          { cache: "no-store" }
+        );
+
+        const rewardJson = await rewardRes.json();
+
+        if (rewardRes.ok) {
+          setRewardSummary(rewardJson.summary);
+        }
+      }
     } catch {
       setFormState("error");
       setErrorMsg("Network error. Try again.");
@@ -142,6 +164,7 @@ export default function CheckInPage() {
     setFirstTime(false);
     setFormState("idle");
     setErrorMsg("");
+    setRewardSummary(null);
     setSelectedEvent(null);
     setPageState(
       events.length > 1 ? "select-event" : events.length === 1 ? "form" : "no-event"
@@ -176,13 +199,13 @@ export default function CheckInPage() {
                 <button
                   key={ev.id}
                   onClick={() => handleSelectEvent(ev)}
-                  className="w-full p-4 bg-gray-800 text-white rounded text-left"
+                  className="w-full rounded bg-gray-800 p-4 text-left text-white"
                 >
                   <div className="font-semibold">{ev.title}</div>
                   <div className="text-sm opacity-70">
                     {ev.venue_name} • {formatDate(ev.event_date)}
                   </div>
-                  <div className="text-xs opacity-60 mt-1 uppercase">{ev.status}</div>
+                  <div className="mt-1 text-xs uppercase opacity-60">{ev.status}</div>
                 </button>
               ))}
             </div>
@@ -198,34 +221,36 @@ export default function CheckInPage() {
             )}
 
             <div className="text-lg font-semibold">{selectedEvent.title}</div>
-            <div className="text-sm opacity-70">{selectedEvent.venue_name}</div>
+            <div className="text-sm opacity-70">
+              {selectedEvent.venue_name} • {formatDate(selectedEvent.event_date)}
+            </div>
 
             <input
               placeholder="Your Name"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
-              className="w-full p-3 bg-gray-800 rounded"
+              className="w-full rounded bg-gray-800 p-3"
             />
 
             <input
               placeholder="Phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full p-3 bg-gray-800 rounded"
+              className="w-full rounded bg-gray-800 p-3"
             />
 
             <input
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 bg-gray-800 rounded"
+              className="w-full rounded bg-gray-800 p-3"
             />
 
             <input
               placeholder="Team Name"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
-              className="w-full p-3 bg-gray-800 rounded"
+              className="w-full rounded bg-gray-800 p-3"
             />
 
             <label className="flex items-center gap-2">
@@ -240,7 +265,7 @@ export default function CheckInPage() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="w-full p-4 bg-green-500 rounded disabled:opacity-50"
+              className="w-full rounded bg-green-500 p-4 disabled:opacity-50"
             >
               {formState === "submitting" ? "Checking in..." : "Check In"}
             </button>
@@ -250,10 +275,40 @@ export default function CheckInPage() {
         )}
 
         {formState === "success" && (
-          <div className="text-center text-white py-10">
-            You're in!
+          <div className="space-y-4 py-10 text-center text-white">
+            <div className="text-2xl font-bold">You're in!</div>
+
+            {rewardSummary && (
+              <div className="space-y-2 rounded bg-gray-800 p-4 text-left">
+                <div>
+                  <strong>Points:</strong> {rewardSummary.total_points ?? 0}
+                </div>
+                <div>
+                  <strong>Visits:</strong> {rewardSummary.total_visits ?? 0}
+                </div>
+                {typeof rewardSummary.available_rewards !== "undefined" && (
+                  <div>
+                    <strong>Available Rewards:</strong>{" "}
+                    {rewardSummary.available_rewards ?? 0}
+                  </div>
+                )}
+                <div className="pt-2 text-sm opacity-80">
+                  Show this screen to your host to redeem rewards.
+                </div>
+              </div>
+            )}
+
+            {!rewardSummary && (
+              <div className="text-sm opacity-80">
+                Check-in complete. Show this screen to your host if needed.
+              </div>
+            )}
+
             <div className="mt-4">
-              <button onClick={handleReset} className="px-4 py-2 bg-gray-800 rounded">
+              <button
+                onClick={handleReset}
+                className="rounded bg-gray-800 px-4 py-2"
+              >
                 Check in another player
               </button>
             </div>
