@@ -12,7 +12,7 @@ type AvailableEvent = {
 export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
-      .from("available_events") // ✅ FIXED (no "public.")
+      .from("available_events")
       .select("id, title, event_date, status, venue_name");
 
     if (error) {
