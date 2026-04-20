@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FourDogsLogo from "@/components/FourDogsLogo";
 import OfflineIndicator from "@/components/OfflineIndicator";
@@ -36,7 +36,7 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function CheckInPage() {
+function CheckInContent() {
   const searchParams = useSearchParams();
   const referrerId = searchParams.get("ref");
 
@@ -139,15 +139,19 @@ export default function CheckInPage() {
       setFormState("success");
 
       if (json.customerId) {
-        const rewardRes = await fetch(
-          `/api/customer-rewards?customerId=${json.customerId}`,
-          { cache: "no-store" }
-        );
+        try {
+          const rewardRes = await fetch(
+            `/api/customer-rewards?customerId=${json.customerId}`,
+            { cache: "no-store" }
+          );
 
-        const rewardJson = await rewardRes.json();
+          const rewardJson = await rewardRes.json();
 
-        if (rewardRes.ok) {
-          setRewardSummary(rewardJson.summary);
+          if (rewardRes.ok) {
+            setRewardSummary(rewardJson.summary);
+          }
+        } catch {
+          // Keep success screen even if rewards summary fails to load
         }
       }
     } catch {
@@ -316,5 +320,25 @@ export default function CheckInPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function CheckInPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-dvh bg-brand-black flex flex-col">
+          <OfflineIndicator />
+          <header className="flex justify-center pt-8 pb-4 px-6">
+            <FourDogsLogo size="md" />
+          </header>
+          <div className="flex-1 flex items-center justify-center px-6 pb-12 text-white">
+            Loading...
+          </div>
+        </main>
+      }
+    >
+      <CheckInContent />
+    </Suspense>
   );
 }
