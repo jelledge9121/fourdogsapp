@@ -76,6 +76,25 @@ function CheckInContent() {
 
         setEvents(available);
 
+        const storedCustomerId = localStorage.getItem("customerId");
+
+        if (storedCustomerId) {
+          try {
+            const rewardRes = await fetch(
+              `/api/customer-rewards?customerId=${storedCustomerId}`,
+              { cache: "no-store" }
+            );
+
+            const rewardJson = await rewardRes.json();
+
+            if (rewardRes.ok) {
+              setRewardSummary(rewardJson.summary);
+            }
+          } catch {
+            // Keep page usable even if rewards summary fails to load
+          }
+        }
+
         if (available.length === 1) {
           setSelectedEvent(available[0]);
           setPageState("form");
@@ -139,6 +158,8 @@ function CheckInContent() {
       setFormState("success");
 
       if (json.customerId) {
+        localStorage.setItem("customerId", json.customerId);
+
         try {
           const rewardRes = await fetch(
             `/api/customer-rewards?customerId=${json.customerId}`,
@@ -168,7 +189,6 @@ function CheckInContent() {
     setFirstTime(false);
     setFormState("idle");
     setErrorMsg("");
-    setRewardSummary(null);
     setSelectedEvent(null);
     setPageState(
       events.length > 1 ? "select-event" : events.length === 1 ? "form" : "no-event"
@@ -228,6 +248,23 @@ function CheckInContent() {
             <div className="text-sm opacity-70">
               {selectedEvent.venue_name} • {formatDate(selectedEvent.event_date)}
             </div>
+
+            {rewardSummary && (
+              <div className="rounded bg-gray-800 p-4 text-sm">
+                <div>
+                  <strong>Points:</strong> {rewardSummary.total_points ?? 0}
+                </div>
+                <div>
+                  <strong>Visits:</strong> {rewardSummary.total_visits ?? 0}
+                </div>
+                {typeof rewardSummary.available_rewards !== "undefined" && (
+                  <div>
+                    <strong>Available Rewards:</strong>{" "}
+                    {rewardSummary.available_rewards ?? 0}
+                  </div>
+                )}
+              </div>
+            )}
 
             <input
               placeholder="Your Name"
