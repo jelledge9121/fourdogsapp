@@ -4,9 +4,10 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
-      .from("rewards")
-      .select("id, name, description, points_cost, is_active")
+      .from("reward_catalog")
+      .select("id, name, description, points_cost, is_active, sort_order")
       .eq("is_active", true)
+      .order("sort_order", { ascending: true })
       .order("points_cost", { ascending: true });
 
     if (error) {
