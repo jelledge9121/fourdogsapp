@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
+export const dynamic = "force-dynamic";
+
 type AvailableEvent = {
   id: string;
   title: string;
@@ -28,7 +30,16 @@ export async function GET() {
         new Date(b.event_date).getTime()
     );
 
-    return NextResponse.json({ events: sortedEvents }, { status: 200 });
+    return NextResponse.json(
+      { events: sortedEvents },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          "CDN-Cache-Control": "no-store",
+        },
+      }
+    );
   } catch (err) {
     return NextResponse.json(
       {
