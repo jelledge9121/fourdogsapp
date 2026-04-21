@@ -9,42 +9,42 @@ export async function POST(req: NextRequest) {
     const rewardId = String(body.rewardId || "").trim();
     const eventId = String(body.eventId || "").trim();
 
-    if (!customerId || !rewardId || !eventId) {
+    if (!customerId || !rewardId) {
       return NextResponse.json(
-        { error: "customerId, rewardId, and eventId are required." },
+        { error: "customerId and rewardId are required." },
         { status: 400 }
       );
     }
 
-    const { data: reward, error: rewardError } = await supabaseAdmin
-      .from("rewards")
-      .select("id, name, points_cost, is_active")
+    const { data: rewardItem, error: rewardError } = await supabaseAdmin
+      .from("reward_catalog")
+      .select("id, name, description, points_cost, is_active")
       .eq("id", rewardId)
       .single();
 
-    if (rewardError || !reward || !reward.is_active) {
+    if (rewardError || !rewardItem || !rewardItem.is_active) {
       return NextResponse.json(
         { error: "Reward not found." },
         { status: 404 }
       );
     }
 
-    const { data: summaryData, error: summaryError } = await supabaseAdmin
-      .from("customer_rewards")
-      .select("total_points")
+    const { data: rewardBalance, error: balanceError } = await supabaseAdmin
+      .from("rewards")
+      .select("points_balance")
       .eq("customer_id", customerId)
       .maybeSingle();
 
-    if (summaryError) {
+    if (balanceError) {
       return NextResponse.json(
-        { error: summaryError.message || "Could not check reward balance." },
+        { error: balanceError.message || "Could not check point balance." },
         { status: 500 }
       );
     }
 
-    const totalPoints = Number(summaryData?.total_points ?? 0);
+    const pointsBalance = Number(rewardBalance?.points_balance ?? 0);
 
-    if (totalPoints < reward.points_cost) {
+    if (pointsBalance < rewardItem.points_cost) {
       return NextResponse.json(
         { error: "Not enough points." },
         { status: 400 }
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       .insert({
         customer_id: customerId,
         reward_id: rewardId,
-        event_id: eventId,
+        event_id: eventId || null,
         status: "pending",
       });
 
