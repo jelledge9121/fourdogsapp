@@ -106,3 +106,92 @@ export interface CheckInWithCustomer extends CheckIn {
 export interface EventWithVenue extends Event {
   venue: Venue;
 }
+
+// ── Reward Catalog & Redemptions ────────────────────────
+
+export type RedemptionStatus = "pending" | "approved" | "rejected" | "expired";
+
+export type LedgerType =
+  | "check_in"
+  | "first_visit_bonus"
+  | "milestone_bonus"
+  | "redemption_debit"
+  | "redemption_refund"
+  | "manual_adjustment";
+
+export interface RewardCatalogItem {
+  id: string;
+  name: string;
+  description: string;
+  points_cost: number;
+  category: string;
+  requires_age_verification: boolean;
+  requires_color_choice: boolean;
+  color_options: string[] | null;
+  active: boolean;
+  sort_order: number;
+}
+
+export interface RewardRedemption {
+  id: string;
+  customer_id: string;
+  venue_id: string;
+  event_id: string | null;
+  reward_catalog_id: string;
+  points_cost: number;
+  status: RedemptionStatus;
+  color_choice: string | null;
+  notes: string | null;
+  moderated_by: string | null;
+  created_at: string;
+  moderated_at: string | null;
+  updated_at: string;
+}
+
+export interface RewardRedemptionWithDetails extends RewardRedemption {
+  customer_name: string;
+  reward_name: string;
+  requires_age_verification: boolean;
+}
+
+export interface LedgerEntry {
+  id: string;
+  customer_id: string;
+  venue_id: string;
+  event_id: string | null;
+  entry_type: LedgerType;
+  points: number;
+  balance_after: number;
+  reference_id: string | null;
+  description: string | null;
+  created_at: string;
+}
+
+// ── API Payloads ────────────────────────────────────────
+
+export interface RedeemPayload {
+  customerId: string;
+  rewardCatalogId: string;
+  venueId: string;
+  eventId?: string;
+  colorChoice?: string;
+}
+
+export interface RedeemResponse {
+  ok: boolean;
+  error?: string;
+  redemption_id?: string;
+  reward_name?: string;
+  points_cost?: number;
+  balance?: number;
+  cost?: number;
+}
+
+export interface ApproveRedemptionPayload {
+  redemptionId: string;
+}
+
+export interface RejectRedemptionPayload {
+  redemptionId: string;
+  reason?: string;
+}
