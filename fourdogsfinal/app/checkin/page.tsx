@@ -302,7 +302,9 @@ function CheckInContent() {
                     ].join(" ")}
                   >
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/25 to-transparent" />
-                    <div className={`pointer-events-none absolute left-0 top-4 bottom-4 w-[4px] rounded-full ${statusStyles.rail}`} />
+                    <div
+                      className={`pointer-events-none absolute left-0 top-4 bottom-4 w-[4px] rounded-full ${statusStyles.rail}`}
+                    />
                     {isLive && (
                       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(163,230,53,0.08),_transparent_30%)]" />
                     )}
@@ -573,4 +575,133 @@ function CheckInContent() {
                     <div>
                       <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-lime-300">
                         Loyalty Status
-                      </div
+                      </div>
+                      <div className="mt-2 text-lg font-semibold text-white">
+                        Your VIP summary
+                      </div>
+                    </div>
+
+                    <div className="rounded-full border border-lime-400/25 bg-lime-400/12 px-3 py-1 text-xs font-semibold text-lime-300">
+                      Updated
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-3">
+                      <div className="text-[11px] uppercase tracking-[0.16em] text-cyan-100/55">
+                        Points
+                      </div>
+                      <div className="mt-2 text-2xl font-bold text-lime-300">
+                        {rewardSummary.total_points ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-3">
+                      <div className="text-[11px] uppercase tracking-[0.16em] text-cyan-100/55">
+                        Visits
+                      </div>
+                      <div className="mt-2 text-2xl font-bold text-white">
+                        {rewardSummary.total_visits ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-3">
+                      <div className="text-[11px] uppercase tracking-[0.16em] text-cyan-100/55">
+                        Rewards
+                      </div>
+                      <div className="mt-2 text-2xl font-bold text-white">
+                        {rewardSummary.available_rewards ?? 0}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-cyan-100/75">
+                    Show this screen to your host to redeem rewards.
+                  </div>
+                </div>
+              )}
+
+              {!rewardSummary && (
+                <div className="rounded-[24px] border border-cyan-300/12 bg-cyan-300/[0.04] px-5 py-4 text-sm text-cyan-100/75 shadow-[0_14px_35px_rgba(0,0,0,0.24)]">
+                  Check-in complete. Show this screen to your host if needed.
+                </div>
+              )}
+
+              <button
+                onClick={handleReset}
+                className="flex h-14 w-full items-center justify-center rounded-2xl border border-cyan-300/15 bg-[linear-gradient(180deg,rgba(6,31,66,0.96),rgba(4,18,40,0.98))] px-4 text-sm font-semibold text-white transition hover:border-cyan-300/25 hover:bg-slate-900"
+              >
+                Check in another player
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default function CheckInPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-dvh overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_24%),radial-gradient(circle_at_top,_rgba(163,230,53,0.14),_transparent_38%),linear-gradient(180deg,_#020617_0%,_#031326_22%,_#06264a_54%,_#031325_100%)] text-white">
+          <OfflineIndicator />
+
+          <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pb-10 pt-4 sm:px-6 sm:pb-12">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-cyan-400/10 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-6 top-6 h-32 rounded-full bg-lime-400/10 blur-3xl" />
+            <div className="pointer-events-none absolute inset-x-12 top-20 h-24 rounded-full bg-cyan-300/10 blur-3xl" />
+
+            <header className="relative pb-6">
+              <div className="relative mx-auto w-full overflow-hidden rounded-[30px] border border-cyan-300/15 bg-[linear-gradient(180deg,rgba(5,25,55,0.96),rgba(4,16,34,0.94))] px-6 py-7 shadow-[0_26px_70px_rgba(0,0,0,0.48)] backdrop-blur-xl">
+                <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/40 to-transparent" />
+                <div className="pointer-events-none absolute -top-12 left-1/2 h-28 w-28 -translate-x-1/2 rounded-full bg-lime-400/10 blur-3xl" />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(125,211,252,0.08),_transparent_45%)]" />
+
+                <div className="relative flex flex-col items-center text-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 scale-125 rounded-full bg-cyan-300/12 blur-3xl" />
+                    <div className="absolute inset-0 scale-110 rounded-full bg-lime-400/10 blur-2xl" />
+                    <div className="relative scale-[1.35] sm:scale-[1.45]">
+                      <FourDogsLogo size="lg" />
+                    </div>
+                  </div>
+
+                  <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-lime-400/30 bg-lime-400/12 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-lime-300 shadow-[0_0_18px_rgba(163,230,53,0.12)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-lime-400" />
+                    Premium Event Check-In
+                  </div>
+
+                  <div className="mt-3 text-sm font-semibold tracking-[0.12em] text-cyan-200">
+                    For a Doggone Good Time
+                  </div>
+
+                  <h1 className="mt-4 text-[2.15rem] font-semibold leading-none tracking-[-0.04em] text-white">
+                    Loading Your Event
+                  </h1>
+
+                  <p className="mt-3 max-w-[18rem] text-sm leading-6 text-cyan-100/75">
+                    Big energy. Fast entry. A major-event feel for trivia and music bingo nights.
+                  </p>
+                </div>
+              </div>
+            </header>
+
+            <div className="flex-1">
+              <div className="rounded-[28px] border border-cyan-300/12 bg-[linear-gradient(180deg,rgba(7,27,58,0.92),rgba(4,14,30,0.92))] px-6 py-12 text-center shadow-[0_24px_60px_rgba(0,0,0,0.42)] backdrop-blur-xl">
+                <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-lime-400" />
+                <div className="text-base font-medium text-white">Loading...</div>
+                <div className="mt-2 text-sm text-cyan-100/65">
+                  Getting tonight ready
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <CheckInContent />
+    </Suspense>
+  );
+}
