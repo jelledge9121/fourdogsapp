@@ -1,55 +1,52 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+type AvailableEvent = {
+  id: string;
+  title: string;
+  event_date: string;
+  status: string;
+  venue_name: string | null;
+};
+
+export async function GET() {
   try {
-    const customerId = req.nextUrl.searchParams.get("customerId");
-
-    if (!customerId) {
-      return NextResponse.json(
-        { error: "Missing customerId." },
-        { status: 400 }
-      );
-    }
-
-    if (!UUID_REGEX.test(customerId)) {
-      return NextResponse.json(
-        { error: "Invalid customerId format." },
-        { status: 400 }
-      );
-    }
-
     const { data, error } = await supabaseAdmin
-      .from("customer_reward_summary")
-      .select("*")
-      .eq("customer_id", customerId)
-      .maybeSingle();
+      .from("available_events")
+      .select("id, title, event_date, status, venue_name");
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || "Could not load rewards." },
+        { error: error.message || "Could not load events." },
         { status: 500 }
       );
     }
 
-    if (!data) {
-      return NextResponse.json(
-        { error: "Reward summary not found for this customer." },
-        { status: 404 }
-      );
-    }
+    const sortedEvents = ((data ?? []) as AvailableEvent[]).sort(
+      (a, b) =>
+        new Date(a.event_date).getTime() -
+        new Date(b.event_date).getTime()
+    );
 
-    return NextResponse.json({ summary: data }, { status: 200 });
+    return NextResponse.json(
+      { events: sortedEvents },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          "CDN-Cache-Control": "no-store",
+        },
+      }
+    );
   } catch (err) {
     return NextResponse.json(
       {
         error:
           err instanceof Error
             ? err.message
-            : "Unexpected server error loading rewards.",
+            : "Unexpected server error loading events.",
       },
       { status: 500 }
     );
