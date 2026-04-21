@@ -21,6 +21,14 @@ interface RewardSummary {
   available_rewards?: number;
 }
 
+interface RewardItem {
+  id: string;
+  name: string;
+  description?: string;
+  points_cost: number;
+  is_active?: boolean;
+}
+
 type PageState = "loading" | "no-event" | "select-event" | "form";
 type FormState = "idle" | "submitting" | "success" | "error";
 
@@ -74,6 +82,32 @@ function CheckInContent() {
   const [errorMsg, setErrorMsg] = useState("");
   const [rewardSummary, setRewardSummary] = useState<RewardSummary | null>(null);
 
+  const [rewards, setRewards] = useState<RewardItem[]>([]);
+  const [rewardsLoading, setRewardsLoading] = useState(false);
+  const [redeemingRewardId, setRedeemingRewardId] = useState<string | null>(null);
+  const [rewardActionMsg, setRewardActionMsg] = useState("");
+
+  async function loadRewards() {
+    try {
+      setRewardsLoading(true);
+      setRewardActionMsg("");
+
+      const res = await fetch("/api/rewards/catalog", { cache: "no-store" });
+      const json = await res.json();
+
+      if (!res.ok) {
+        setRewardActionMsg(json.error || "Could not load rewards.");
+        return;
+      }
+
+      setRewards(json.rewards ?? []);
+    } catch {
+      setRewardActionMsg("Could not load rewards.");
+    } finally {
+      setRewardsLoading(false);
+    }
+  }
+
   useEffect(() => {
     async function loadEvents() {
       try {
@@ -113,6 +147,8 @@ function CheckInContent() {
           } catch {
             // Keep page usable even if rewards summary fails to load
           }
+
+          await loadRewards();
         }
 
         if (available.length === 1) {
@@ -140,6 +176,7 @@ function CheckInContent() {
     setFormState("idle");
     setErrorMsg("");
     setRewardSummary(null);
+    setRewardActionMsg("");
     setPageState("select-event");
   }
 
@@ -155,6 +192,7 @@ function CheckInContent() {
 
     setFormState("submitting");
     setErrorMsg("");
+    setRewardActionMsg("");
 
     try {
       const res = await fetch("/api/checkin", {
@@ -198,10 +236,63 @@ function CheckInContent() {
         } catch {
           // Keep success screen even if rewards summary fails to load
         }
+
+        await loadRewards();
       }
     } catch {
       setFormState("error");
       setErrorMsg("Network error. Try again.");
+    }
+  }
+
+  async function handleRedeem(rewardId: string) {
+    const customerId = localStorage.getItem("customerId");
+
+    if (!customerId || !selectedEvent) {
+      setRewardActionMsg("Missing customer or event information.");
+      return;
+    }
+
+    try {
+      setRedeemingRewardId(rewardId);
+      setRewardActionMsg("");
+
+      const res = await fetch("/api/rewards/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId,
+          rewardId,
+          eventId: selectedEvent.id,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setRewardActionMsg(json.error || "Could not redeem reward.");
+        return;
+      }
+
+      setRewardActionMsg(
+        "Reward request submitted. Show this screen to your host."
+      );
+
+      const rewardRes = await fetch(
+        `/api/customer-rewards?customerId=${customerId}`,
+        { cache: "no-store" }
+      );
+      const rewardJson = await rewardRes.json();
+
+      if (rewardRes.ok) {
+        setRewardSummary(rewardJson.summary);
+      }
+
+      await loadRewards();
+    } catch {
+      setRewardActionMsg("Could not redeem reward.");
+    } finally {
+      setRedeemingRewardId(null);
     }
   }
 
@@ -213,6 +304,7 @@ function CheckInContent() {
     setFirstTime(false);
     setFormState("idle");
     setErrorMsg("");
+    setRewardActionMsg("");
     setSelectedEvent(null);
     setPageState(
       events.length > 1 ? "select-event" : events.length === 1 ? "form" : "no-event"
@@ -625,21 +717,87 @@ function CheckInContent() {
                 </div>
               )}
 
-              <div className="rounded-[24px] border border-cyan-300/12 bg-cyan-300/[0.04] p-4 text-left text-sm text-cyan-100/80">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">
-                  Rewards Menu
+              <div className="rounded-[24px] border border-cyan-300/12 bg-cyan-300/[0.04] p-4 text-left">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">
+                      Rewards Menu
+                    </div>
+                    <div className="mt-1 text-sm text-cyan-100/75">
+                      Redeem by submitting here, then show this screen to your host.
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={loadRewards}
+                    className="rounded-full border border-cyan-300/15 bg-cyan-300/[0.05] px-3 py-1.5 text-xs font-semibold text-cyan-100/85 transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.08]"
+                  >
+                    Refresh
+                  </button>
                 </div>
 
-                <div className="mt-3 space-y-2">
-                  <div>10 pts — Extra music bingo card OR +2 trivia points</div>
-                  <div>20 pts — 2 bingo cards OR +4 trivia points</div>
-                  <div>50 pts — Free appetizer</div>
-                  <div>75 pts — Free alcoholic drink (21+)</div>
-                </div>
+                {rewardsLoading && (
+                  <div className="mt-4 text-sm text-cyan-100/65">Loading rewards...</div>
+                )}
 
-                <div className="mt-3 text-xs text-cyan-100/60">
-                  Redeem by showing this screen to your host.
-                </div>
+                {!rewardsLoading && rewards.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {rewards.map((reward) => {
+                      const currentPoints = rewardSummary?.total_points ?? 0;
+                      const canRedeemReward = currentPoints >= reward.points_cost;
+                      const isSubmitting = redeemingRewardId === reward.id;
+
+                      return (
+                        <div
+                          key={reward.id}
+                          className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold text-white">
+                                {reward.name}
+                              </div>
+                              {reward.description && (
+                                <div className="mt-1 text-xs text-cyan-100/65">
+                                  {reward.description}
+                                </div>
+                              )}
+                              <div className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-lime-300">
+                                {reward.points_cost} points
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleRedeem(reward.id)}
+                              disabled={!canRedeemReward || isSubmitting}
+                              className="shrink-0 rounded-xl bg-[linear-gradient(90deg,#84cc16_0%,#a3e635_45%,#bef264_100%)] px-3 py-2 text-xs font-bold text-slate-950 shadow-[0_10px_24px_rgba(163,230,53,0.22)] transition disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {isSubmitting
+                                ? "Submitting..."
+                                : canRedeemReward
+                                ? "Redeem"
+                                : `Need ${reward.points_cost - currentPoints} more`}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {!rewardsLoading && rewards.length === 0 && (
+                  <div className="mt-4 text-sm text-cyan-100/65">
+                    No rewards available right now.
+                  </div>
+                )}
+
+                {rewardActionMsg && (
+                  <div className="mt-4 rounded-2xl border border-cyan-300/12 bg-cyan-300/[0.04] px-4 py-3 text-sm text-cyan-100/80">
+                    {rewardActionMsg}
+                  </div>
+                )}
               </div>
 
               {!rewardSummary && (
