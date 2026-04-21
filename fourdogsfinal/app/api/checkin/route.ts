@@ -118,17 +118,20 @@ export async function POST(req: NextRequest) {
     }
   );
 
-  if (checkinError) {
-    if (
-      checkinError.message?.includes("already checked in") ||
-      checkinError.message?.includes("already_checked_in") ||
-      checkinError.code === "23505"
-    ) {
-      return NextResponse.json(
-        { error: "You're already checked in!" },
-        { status: 409 }
-      );
-    }
+ if (
+  checkinError.message?.includes("already checked in") ||
+  checkinError.message?.includes("already_checked_in")
+) {
+  return NextResponse.json(
+    { error: "You're already checked in!" },
+    { status: 409 }
+  );
+}
+
+return NextResponse.json(
+  { error: checkinError.message || "Check-in failed. Try again." },
+  { status: 500 }
+);
 
     apiLog("error", "/api/checkin", "create_checkin_error", {
       ip,
