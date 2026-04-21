@@ -4,6 +4,18 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { CheckinPayload } from "@/lib/schemas";
 import { apiLog } from "@/lib/logger";
 
+function normalizePhone(phone?: string | null): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "").trim();
+  return digits.length ? digits : null;
+}
+
+function normalizeEmail(email?: string | null): string | null {
+  if (!email) return null;
+  const cleaned = email.trim().toLowerCase();
+  return cleaned.length ? cleaned : null;
+}
+
 export async function POST(req: NextRequest) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -50,6 +62,9 @@ export async function POST(req: NextRequest) {
     referredByCustomerId?: string | null;
   };
 
+  const normalizedPhone = normalizePhone(phone);
+  const normalizedEmail = normalizeEmail(email);
+
   const { data: events, error: eventError } = await supabaseAdmin
     .from("events")
     .select("id, venue_id")
@@ -78,15 +93,21 @@ export async function POST(req: NextRequest) {
     "find_or_create_customer",
     {
       p_full_name: fullName,
-      p_phone: phone || null,
-      p_email: email || null,
+      p_phone: normalizedPhone,
+      p_email: normalizedEmail,
     }
   );
 
   if (customerError) {
     apiLog("error", "/api/checkin", "find_or_create_customer_error", {
       ip,
-      meta: { code: customerError.code, message: customerError.message },
+      meta: {
+        code: customerError.code,
+        message: customerError.message,
+        fullName,
+        normalizedPhone,
+        normalizedEmail,
+      },
     });
     return NextResponse.json(
       { error: customerError.message || "Could not process customer. Try again." },
@@ -99,7 +120,7 @@ export async function POST(req: NextRequest) {
   if (!customerId) {
     apiLog("error", "/api/checkin", "no_customer_id_returned", {
       ip,
-      meta: { customerData },
+      meta: { customerData, fullName, normalizedPhone, normalizedEmail },
     });
     return NextResponse.json(
       { error: "Could not process customer. Try again." },
@@ -118,25 +139,28 @@ export async function POST(req: NextRequest) {
     }
   );
 
- if (
-  checkinError.message?.includes("already checked in") ||
-  checkinError.message?.includes("already_checked_in")
-) {
-  return NextResponse.json(
-    { error: "You're already checked in!" },
-    { status: 409 }
-  );
-}
-
-return NextResponse.json(
-  { error: checkinError.message || "Check-in failed. Try again." },
-  { status: 500 }
-);
-
+  if (checkinError) {
     apiLog("error", "/api/checkin", "create_checkin_error", {
       ip,
-      meta: { code: checkinError.code, message: checkinError.message },
+      meta: {
+        code: checkinError.code,
+        message: checkinError.message,
+        customerId,
+        eventId: event.id,
+        venueId: event.venue_id,
+        teamName: teamName || null,
+      },
     });
+
+    if (
+      checkinError.message?.includes("already checked in") ||
+      checkinError.message?.includes("already_checked_in")
+    ) {
+      return NextResponse.json(
+        { error: "You're already checked in!" },
+        { status: 409 }
+      );
+    }
 
     return NextResponse.json(
       { error: checkinError.message || "Check-in failed. Try again." },
@@ -144,7 +168,6 @@ return NextResponse.json(
     );
   }
 
-  // Handle RPC-level error (returned as JSON, not thrown)
   const checkinResult = checkinData as {
     ok: boolean;
     error?: string;
@@ -155,14 +178,25 @@ return NextResponse.json(
   };
 
   if (checkinResult && !checkinResult.ok) {
+    apiLog("warn", "/api/checkin", "checkin_rpc_not_ok", {
+      ip,
+      meta: {
+        customerId,
+        eventId: event.id,
+        venueId: event.venue_id,
+        result: checkinResult,
+      },
+    });
+
     if (checkinResult.error === "already_checked_in") {
       return NextResponse.json(
         { error: "You're already checked in!" },
         { status: 409 }
       );
     }
+
     return NextResponse.json(
-      { error: "Check-in failed. Try again." },
+      { error: checkinResult.error || "Check-in failed. Try again." },
       { status: 500 }
     );
   }
@@ -176,6 +210,8 @@ return NextResponse.json(
       checkInId,
       team: teamName,
       referredByCustomerId: referredByCustomerId || null,
+      normalizedPhone,
+      normalizedEmail,
     },
   });
 
