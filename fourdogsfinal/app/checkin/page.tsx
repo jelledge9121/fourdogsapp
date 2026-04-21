@@ -143,7 +143,11 @@ function CheckInContent() {
     setPageState("select-event");
   }
 
-  const canSubmit = isValid(playerName) && formState !== "submitting";
+  const canSubmit =
+    isValid(playerName) &&
+    isValid(phone) &&
+    isValid(email) &&
+    formState !== "submitting";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -158,8 +162,8 @@ function CheckInContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: sanitize(playerName, 100),
-          phone: phone ? sanitize(phone, 20) : "",
-          email: email ? sanitize(email, 100) : "",
+          phone: sanitize(phone, 20),
+          email: sanitize(email, 100),
           teamName: teamName ? sanitize(teamName, 30) : "",
           firstTime,
           eventId: selectedEvent.id,
@@ -474,11 +478,11 @@ function CheckInContent() {
                       htmlFor="phone"
                       className="text-sm font-medium text-cyan-50"
                     >
-                      Phone
+                      Phone *
                     </label>
                     <input
                       id="phone"
-                      placeholder="Optional"
+                      placeholder="Enter your phone"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="h-14 w-full rounded-2xl border border-cyan-300/15 bg-slate-950/75 px-4 text-base text-white placeholder:text-cyan-100/35 outline-none transition focus:border-lime-400/60 focus:ring-2 focus:ring-lime-400/20"
@@ -490,11 +494,11 @@ function CheckInContent() {
                       htmlFor="email"
                       className="text-sm font-medium text-cyan-50"
                     >
-                      Email
+                      Email *
                     </label>
                     <input
                       id="email"
-                      placeholder="Optional"
+                      placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="h-14 w-full rounded-2xl border border-cyan-300/15 bg-slate-950/75 px-4 text-base text-white placeholder:text-cyan-100/35 outline-none transition focus:border-lime-400/60 focus:ring-2 focus:ring-lime-400/20"
@@ -620,6 +624,23 @@ function CheckInContent() {
                   </div>
                 </div>
               )}
+
+              <div className="rounded-[24px] border border-cyan-300/12 bg-cyan-300/[0.04] p-4 text-left text-sm text-cyan-100/80">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">
+                  Rewards Menu
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  <div>10 pts — Extra music bingo card OR +2 trivia points</div>
+                  <div>20 pts — 2 bingo cards OR +4 trivia points</div>
+                  <div>50 pts — Free appetizer</div>
+                  <div>75 pts — Free alcoholic drink (21+)</div>
+                </div>
+
+                <div className="mt-3 text-xs text-cyan-100/60">
+                  Redeem by showing this screen to your host.
+                </div>
+              </div>
 
               {!rewardSummary && (
                 <div className="rounded-[24px] border border-cyan-300/12 bg-cyan-300/[0.04] px-5 py-4 text-sm text-cyan-100/75 shadow-[0_14px_35px_rgba(0,0,0,0.24)]">
