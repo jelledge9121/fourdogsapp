@@ -41,16 +41,18 @@ function getStatusClasses(status: string) {
 
   if (normalized === "live") {
     return {
-      pill: "border-emerald-400/30 bg-emerald-400/12 text-emerald-300 shadow-[0_0_18px_rgba(34,197,94,0.08)]",
+      pill: "border-emerald-400/35 bg-emerald-400/15 text-emerald-300 shadow-[0_0_24px_rgba(34,197,94,0.12)]",
       dot: "bg-emerald-400",
-      card: "hover:border-emerald-400/35 hover:shadow-[0_0_0_1px_rgba(34,197,94,0.14),0_18px_40px_rgba(0,0,0,0.38)]",
+      card: "border-emerald-400/20 hover:border-emerald-400/40 hover:shadow-[0_0_0_1px_rgba(34,197,94,0.16),0_22px_60px_rgba(0,0,0,0.42)]",
+      edge: "from-emerald-400/90 via-cyan-400/50 to-transparent",
     };
   }
 
   return {
-    pill: "border-white/10 bg-white/[0.04] text-slate-300",
-    dot: "bg-slate-400",
-    card: "hover:border-cyan-400/18 hover:shadow-[0_0_0_1px_rgba(56,189,248,0.07),0_18px_40px_rgba(0,0,0,0.34)]",
+    pill: "border-cyan-300/15 bg-cyan-400/[0.06] text-cyan-100/80",
+    dot: "bg-cyan-300/70",
+    card: "border-white/10 hover:border-cyan-300/25 hover:shadow-[0_0_0_1px_rgba(56,189,248,0.10),0_22px_60px_rgba(0,0,0,0.4)]",
+    edge: "from-cyan-400/40 via-cyan-300/10 to-transparent",
   };
 }
 
@@ -214,53 +216,64 @@ function CheckInContent() {
   }, [events]);
 
   return (
-    <main className="min-h-dvh overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.10),_transparent_18%),radial-gradient(circle_at_top,_rgba(8,145,178,0.12),_transparent_42%),linear-gradient(180deg,_#020817_0%,_#04101f_28%,_#071425_58%,_#020817_100%)] text-white">
+    <main className="min-h-dvh overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.15),_transparent_14%),radial-gradient(circle_at_50%_0%,_rgba(34,211,238,0.18),_transparent_32%),linear-gradient(180deg,_#020617_0%,_#03101d_22%,_#06182a_52%,_#03101d_76%,_#020617_100%)] text-white">
       <OfflineIndicator />
 
-      <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pb-10 pt-5 sm:px-6 sm:pb-12">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-cyan-400/[0.05] to-transparent" />
-        <div className="pointer-events-none absolute inset-x-10 top-10 h-24 rounded-full bg-emerald-400/[0.05] blur-3xl" />
+      <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pb-10 pt-4 sm:px-6 sm:pb-12">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-cyan-400/[0.08] to-transparent" />
+        <div className="pointer-events-none absolute left-1/2 top-8 h-36 w-36 -translate-x-1/2 rounded-full bg-emerald-400/[0.08] blur-3xl" />
+        <div className="pointer-events-none absolute left-1/2 top-14 h-44 w-72 -translate-x-1/2 rounded-full bg-cyan-400/[0.08] blur-3xl" />
 
-        <header className="relative pb-5">
-          <div className="mx-auto w-full rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,18,34,0.92),rgba(5,12,24,0.82))] px-5 py-5 shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-            <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/25 to-transparent" />
-            <div className="flex flex-col items-center text-center">
+        <header className="relative pb-6">
+          <div className="relative overflow-hidden rounded-[32px] border border-cyan-300/15 bg-[linear-gradient(180deg,rgba(6,18,36,0.95),rgba(4,12,24,0.92))] px-5 py-6 shadow-[0_24px_70px_rgba(0,0,0,0.42)] backdrop-blur-xl">
+            <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/30 to-transparent" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.08),transparent_34%)]" />
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-emerald-400/[0.03] to-transparent" />
+
+            <div className="relative flex flex-col items-center text-center">
               <div className="relative">
                 <div className="absolute inset-0 scale-110 rounded-full bg-cyan-400/10 blur-2xl" />
+                <div className="absolute inset-0 scale-125 rounded-full bg-emerald-400/10 blur-3xl" />
                 <div className="relative">
-                  <FourDogsLogo size="md" />
+                  <FourDogsLogo size="lg" />
                 </div>
               </div>
 
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Four Dogs Check-In
+                Four Dogs Entertainment
               </div>
 
-              <h1 className="mt-4 text-[2rem] font-semibold tracking-[-0.03em] text-white">
-                {pageState === "form" && selectedEvent ? "Enter the Event" : "Select Your Event"}
+              <h1 className="mt-4 text-[2.1rem] font-semibold leading-none tracking-[-0.04em] text-white">
+                {pageState === "form" && selectedEvent
+                  ? "VIP Event Entry"
+                  : "You’re On The List"}
               </h1>
 
-              <p className="mt-2 max-w-xs text-sm leading-6 text-slate-400">
-                Fast mobile check-in built for live trivia, music bingo, and premium event nights.
+              <p className="mt-3 max-w-[280px] text-sm leading-6 text-slate-300">
+                High-energy trivia and music bingo nights that feel bigger than they should.
               </p>
+
+              <div className="mt-3 text-sm font-medium italic text-emerald-300">
+                For a Doggone Good Time
+              </div>
             </div>
           </div>
         </header>
 
         <div className="relative flex-1">
           {pageState === "loading" && (
-            <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,18,34,0.9),rgba(5,12,24,0.84))] px-6 py-12 text-center shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+            <div className="rounded-[30px] border border-cyan-300/12 bg-[linear-gradient(180deg,rgba(9,22,40,0.92),rgba(5,12,24,0.88))] px-6 py-12 text-center shadow-[0_24px_60px_rgba(0,0,0,0.38)] backdrop-blur-xl">
               <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-emerald-400" />
               <div className="text-base font-medium text-white">Loading events...</div>
               <div className="mt-2 text-sm text-slate-400">
-                Getting everything ready for tonight
+                Getting tonight’s lineup ready
               </div>
             </div>
           )}
 
           {pageState === "no-event" && (
-            <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,18,34,0.9),rgba(5,12,24,0.84))] px-6 py-12 text-center shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+            <div className="rounded-[30px] border border-cyan-300/12 bg-[linear-gradient(180deg,rgba(9,22,40,0.92),rgba(5,12,24,0.88))] px-6 py-12 text-center shadow-[0_24px_60px_rgba(0,0,0,0.38)] backdrop-blur-xl">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-2xl">
                 🎟️
               </div>
@@ -273,7 +286,7 @@ function CheckInContent() {
           )}
 
           {pageState === "select-event" && (
-            <section className="space-y-3">
+            <section className="space-y-4">
               {events.map((ev) => {
                 const statusStyles = getStatusClasses(ev.status);
                 const isLive = ev.status.toLowerCase() === "live";
@@ -283,28 +296,30 @@ function CheckInContent() {
                     key={ev.id}
                     onClick={() => handleSelectEvent(ev)}
                     className={[
-                      "group relative w-full overflow-hidden rounded-[24px] border bg-[linear-gradient(180deg,rgba(17,28,48,0.96),rgba(12,22,38,0.98))] p-5 text-left transition-all duration-200",
-                      "border-white/10 shadow-[0_18px_40px_rgba(0,0,0,0.34)]",
-                      "active:scale-[0.99]",
+                      "group relative w-full overflow-hidden rounded-[28px] border bg-[linear-gradient(180deg,rgba(12,28,50,0.98),rgba(8,18,34,0.98))] p-5 text-left transition-all duration-200",
+                      "shadow-[0_24px_60px_rgba(0,0,0,0.38)] active:scale-[0.99]",
                       statusStyles.card,
                     ].join(" ")}
                   >
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,211,238,0.10),transparent_35%)] opacity-80" />
                     <div
-                      className={`pointer-events-none absolute left-0 top-4 bottom-4 w-[3px] rounded-full ${
-                        isLive ? "bg-emerald-400/90" : "bg-cyan-400/20"
-                      }`}
+                      className={`pointer-events-none absolute left-0 top-4 bottom-4 w-1 rounded-full bg-gradient-to-b ${statusStyles.edge}`}
                     />
+                    <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-                    <div className="pl-2">
+                    <div className="relative pl-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="text-[1.35rem] font-semibold leading-tight tracking-[-0.02em] text-white">
+                          <div className="text-[1.35rem] font-semibold leading-tight tracking-[-0.03em] text-white">
                             {ev.title}
                           </div>
 
-                          <div className="mt-2 text-sm text-slate-400">
-                            {ev.venue_name} • {formatDate(ev.event_date)}
+                          <div className="mt-2 text-sm text-slate-300">
+                            {ev.venue_name}
+                          </div>
+
+                          <div className="mt-1 text-sm text-slate-400">
+                            {formatDate(ev.event_date)}
                           </div>
                         </div>
 
@@ -325,12 +340,12 @@ function CheckInContent() {
                         </div>
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                          Tap to continue
+                      <div className="mt-5 flex items-center justify-between">
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-cyan-100/45">
+                          Tap to enter
                         </div>
-                        <div className="text-sm font-medium text-emerald-300 transition-transform duration-200 group-hover:translate-x-1">
-                          Enter →
+                        <div className="text-sm font-semibold text-emerald-300 transition-transform duration-200 group-hover:translate-x-1">
+                          Continue →
                         </div>
                       </div>
                     </div>
@@ -346,16 +361,19 @@ function CheckInContent() {
                 <button
                   type="button"
                   onClick={handleBackToEvents}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/[0.07]"
+                  className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-white/[0.04] px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-cyan-300/30 hover:bg-white/[0.07]"
                 >
                   <span aria-hidden="true">←</span>
                   Back to events
                 </button>
               )}
 
-              <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,18,34,0.95),rgba(5,12,24,0.88))] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+              <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/15 bg-[linear-gradient(180deg,rgba(8,20,38,0.96),rgba(4,12,24,0.92))] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.4)] backdrop-blur-xl">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,211,238,0.10),transparent_36%)]" />
+                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-emerald-400/[0.03] to-transparent" />
                 <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/25 to-transparent" />
-                <div className="flex items-start justify-between gap-3">
+
+                <div className="relative flex items-start justify-between gap-3">
                   <div>
                     <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">
                       Selected Event
@@ -363,12 +381,15 @@ function CheckInContent() {
                     <div className="mt-2 text-[1.6rem] font-semibold leading-tight tracking-[-0.03em] text-white">
                       {selectedEvent.title}
                     </div>
-                    <div className="mt-2 text-sm text-slate-400">
-                      {selectedEvent.venue_name} • {formatDate(selectedEvent.event_date)}
+                    <div className="mt-2 text-sm text-slate-300">
+                      {selectedEvent.venue_name}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-400">
+                      {formatDate(selectedEvent.event_date)}
                     </div>
                   </div>
 
-                  <div className="shrink-0 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-right">
+                  <div className="shrink-0 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-right shadow-[0_0_24px_rgba(34,197,94,0.08)]">
                     <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-300">
                       Status
                     </div>
@@ -380,7 +401,7 @@ function CheckInContent() {
               </div>
 
               {rewardSummary && (
-                <div className="rounded-[28px] border border-emerald-400/20 bg-[linear-gradient(180deg,rgba(10,24,26,0.98),rgba(6,16,22,0.98))] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.32)]">
+                <div className="rounded-[30px] border border-emerald-400/20 bg-[linear-gradient(180deg,rgba(8,24,28,0.98),rgba(6,16,22,0.98))] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">
@@ -427,13 +448,13 @@ function CheckInContent() {
                 </div>
               )}
 
-              <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,18,34,0.95),rgba(5,12,24,0.88))] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+              <div className="rounded-[30px] border border-cyan-300/15 bg-[linear-gradient(180deg,rgba(8,20,38,0.96),rgba(4,12,24,0.92))] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.4)] backdrop-blur-xl">
                 <div className="mb-5">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
                     Player Details
                   </div>
                   <div className="mt-2 text-lg font-semibold text-white">
-                    Quick check-in
+                    Secure your spot
                   </div>
                 </div>
 
@@ -450,7 +471,7 @@ function CheckInContent() {
                       placeholder="Enter your name"
                       value={playerName}
                       onChange={(e) => setPlayerName(e.target.value)}
-                      className="h-14 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-base text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
+                      className="h-14 w-full rounded-2xl border border-cyan-300/12 bg-slate-950/75 px-4 text-base text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
                     />
                   </div>
 
@@ -466,7 +487,7 @@ function CheckInContent() {
                       placeholder="Optional"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="h-14 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-base text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
+                      className="h-14 w-full rounded-2xl border border-cyan-300/12 bg-slate-950/75 px-4 text-base text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
                     />
                   </div>
 
@@ -482,7 +503,7 @@ function CheckInContent() {
                       placeholder="Optional"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="h-14 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-base text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
+                      className="h-14 w-full rounded-2xl border border-cyan-300/12 bg-slate-950/75 px-4 text-base text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
                     />
                   </div>
 
@@ -498,11 +519,11 @@ function CheckInContent() {
                       placeholder="Optional"
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
-                      className="h-14 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-base text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
+                      className="h-14 w-full rounded-2xl border border-cyan-300/12 bg-slate-950/75 px-4 text-base text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
                     />
                   </div>
 
-                  <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 transition hover:border-emerald-400/25">
+                  <label className="flex items-center gap-3 rounded-2xl border border-cyan-300/12 bg-white/[0.04] px-4 py-3.5 transition hover:border-emerald-400/25">
                     <input
                       type="checkbox"
                       checked={firstTime}
@@ -522,7 +543,7 @@ function CheckInContent() {
                   <button
                     type="submit"
                     disabled={!canSubmit}
-                    className="mt-2 flex h-14 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-400 px-5 text-base font-bold text-slate-950 shadow-[0_16px_35px_rgba(34,197,94,0.28)] transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="mt-2 flex h-14 w-full items-center justify-center rounded-2xl bg-[linear-gradient(90deg,_#22c55e_0%,_#34d399_38%,_#2dd4bf_100%)] px-5 text-base font-bold text-slate-950 shadow-[0_18px_40px_rgba(34,197,94,0.26)] transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {formState === "submitting" ? "Checking in..." : "Check In"}
                   </button>
@@ -539,23 +560,23 @@ function CheckInContent() {
 
           {formState === "success" && (
             <div className="space-y-4 py-2">
-              <div className="rounded-[28px] border border-emerald-400/20 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.18),_transparent_40%),linear-gradient(180deg,rgba(9,18,34,0.96),rgba(6,16,22,0.96))] p-6 text-center shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-400/10 text-3xl shadow-[0_0_24px_rgba(34,197,94,0.18)]">
+              <div className="rounded-[30px] border border-emerald-400/25 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.20),_transparent_38%),linear-gradient(180deg,rgba(8,20,38,0.96),rgba(6,16,22,0.96))] p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,0.4)]">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-400/10 text-3xl shadow-[0_0_28px_rgba(34,197,94,0.2)]">
                   ✓
                 </div>
                 <div className="mt-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">
                   Check-In Complete
                 </div>
-                <div className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-white">
+                <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">
                   You&apos;re in!
                 </div>
                 <div className="mt-2 text-sm text-slate-300">
-                  You’re checked in and ready to play.
+                  Welcome to the event. Show this screen if your host needs it.
                 </div>
               </div>
 
               {rewardSummary && (
-                <div className="space-y-4 rounded-[28px] border border-emerald-400/20 bg-[linear-gradient(180deg,rgba(10,24,26,0.98),rgba(6,16,22,0.98))] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.32)]">
+                <div className="space-y-4 rounded-[30px] border border-emerald-400/20 bg-[linear-gradient(180deg,rgba(8,24,28,0.98),rgba(6,16,22,0.98))] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">
@@ -605,60 +626,3 @@ function CheckInContent() {
                   </div>
                 </div>
               )}
-
-              {!rewardSummary && (
-                <div className="rounded-[24px] border border-white/10 bg-white/[0.04] px-5 py-4 text-sm text-slate-300 shadow-[0_14px_35px_rgba(0,0,0,0.24)]">
-                  Check-in complete. Show this screen to your host if needed.
-                </div>
-              )}
-
-              <button
-                onClick={handleReset}
-                className="flex h-14 w-full items-center justify-center rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(17,28,48,0.96),rgba(12,22,38,0.98))] px-4 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900"
-              >
-                Check in another player
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
-  );
-}
-
-export default function CheckInPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-dvh overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.10),_transparent_18%),radial-gradient(circle_at_top,_rgba(8,145,178,0.12),_transparent_42%),linear-gradient(180deg,_#020817_0%,_#04101f_28%,_#071425_58%,_#020817_100%)] text-white">
-          <OfflineIndicator />
-          <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pb-10 pt-5 sm:px-6 sm:pb-12">
-            <header className="pb-5">
-              <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,18,34,0.92),rgba(5,12,24,0.82))] px-5 py-5 shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                <div className="flex flex-col items-center text-center">
-                  <FourDogsLogo size="md" />
-                  <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    Four Dogs Check-In
-                  </div>
-                  <h1 className="mt-4 text-[2rem] font-semibold tracking-[-0.03em] text-white">
-                    Loading
-                  </h1>
-                </div>
-              </div>
-            </header>
-
-            <div className="flex flex-1 items-start">
-              <div className="w-full rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,18,34,0.9),rgba(5,12,24,0.84))] px-6 py-12 text-center shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-emerald-400" />
-                <div className="text-base font-medium text-white">Loading...</div>
-              </div>
-            </div>
-          </div>
-        </main>
-      }
-    >
-      <CheckInContent />
-    </Suspense>
-  );
-}
