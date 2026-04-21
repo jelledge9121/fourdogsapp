@@ -93,3 +93,29 @@ export const CustomerSearchPayload = z.object({
   venueId: uuidField,
 });
 export type CustomerSearchPayload = z.infer<typeof CustomerSearchPayload>;
+
+// ── /api/rewards/catalog ────────────────────────────────
+// (GET, no payload needed)
+
+// ── /api/rewards/redeem ─────────────────────────────────
+export const RedeemPayload = z.object({
+  customerId: uuidField,
+  rewardCatalogId: uuidField,
+  venueId: uuidField.optional(),
+  eventId: uuidField.optional(),
+  colorChoice: z.string().max(20).optional(),
+});
+export type RedeemPayload = z.infer<typeof RedeemPayload>;
+
+// ── /api/host/redemptions/approve ───────────────────────
+export const ApproveRedemptionPayload = z.object({
+  redemptionId: uuidField,
+});
+export type ApproveRedemptionPayload = z.infer<typeof ApproveRedemptionPayload>;
+
+// ── /api/host/redemptions/reject ────────────────────────
+export const RejectRedemptionPayload = z.object({
+  redemptionId: uuidField,
+  reason: z.string().max(200).optional(),
+});
+export type RejectRedemptionPayload = z.infer<typeof RejectRedemptionPayload>;
